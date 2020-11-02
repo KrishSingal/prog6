@@ -15,10 +15,14 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
     }
 
     public V lookup(K key){
+        if(key == null){
+            return null;
+        }
+
         return (V) find(key, root).value;
     }
 
-    public TreapNode find(K key, TreapNode root){
+    private TreapNode find(K key, TreapNode root){
         // The node is not found, return null
         if(root == null){
             return null;
@@ -104,8 +108,10 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
     }*/
 
     public void insert (K key, V value){
-        remove(key);
-        root = insertRec (new TreapNode(key, value), root);
+        if(key != null && value != null) {
+            remove(key);
+            root = insertRec(new TreapNode(key, value), root);
+        }
     }
 
     // Overloaded insert that recursively inserts and heapifies
@@ -301,7 +307,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
     }
 
     public String toString() {
-        String ret ="";
+        /*String ret ="";
 
         Stack<TreapNode> nodes = new Stack<TreapNode> ();
         nodes.push(root);
@@ -310,19 +316,39 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             TreapNode now = nodes.pop();
             ret += now;
 
-            if(now.left != null){
-                nodes.push(now.left);
-            }
             if(now.right != null){
                 nodes.push(now.right);
             }
+            if(now.left != null){
+                nodes.push(now.left);
+            }
+        }*/
+
+        String ret = buildString(root, 0);
+
+        return ret;
+    }
+
+    public String buildString (TreapNode root, int tab_amt){
+        String ret = "";
+
+        if(root != null) {
+
+            for (int i = 0; i < tab_amt; i++) {
+                ret += "\t";
+            }
+            ret += root;
+
+            ret += buildString(root.left, tab_amt +1);
+            ret += buildString(root.right, tab_amt +1);
+
         }
 
         return ret;
     }
 
-    public Iterator<K> iterator() throws UnsupportedOperationException{
-        throw new UnsupportedOperationException("Not done yet!");
+    public Iterator<K> iterator(){
+        return new TreapMapIterator(root);
     }
 
     public double balanceFactor() throws UnsupportedOperationException{
@@ -349,13 +375,36 @@ class TreapNode<K extends Comparable<K>, V> {
     }
 }
 
-/*class TreapMapIterator implements Iterator<K extends Comparable<K>> {
+class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
     TreapNode root;
+    ArrayList<K> ordered = new ArrayList<K>();
+    int index;
 
     public TreapMapIterator(TreapNode root){
         this.root = root;
+        inOrder(root);
+        index =0;
     }
 
+    public void inOrder (TreapNode root){
+        if(root!= null) {
+            inOrder(root.left);
+            ordered.add((K) root.key);
+            inOrder(root.right);
+        }
+    }
 
+    public K next() throws NoSuchElementException{
+        if(!hasNext()){
+            throw new NoSuchElementException("No more elements!");
+        }
 
-}*/
+        K key_ret = ordered.get(index);
+        index++;
+        return key_ret;
+    }
+
+    public boolean hasNext(){
+        return index < ordered.size();
+    }
+}
