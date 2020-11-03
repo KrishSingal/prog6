@@ -4,7 +4,7 @@ import java.util.*;
 
 public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
 
-    TreapNode root;
+    public TreapNode root;
 
     public TreapMap (){
         root = null;
@@ -242,10 +242,10 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             return null;
         }
 
-        if(key.compareTo((K)root.key) <0){
+        if(key != null && key.compareTo((K)root.key) <0){
             root.left = removeRec(key, root.left);
         }
-        else if(key.compareTo((K)root.key) >0){
+        else if(key != null && key.compareTo((K)root.key) >0){
             root.right = removeRec(key, root.right);
         }
 
@@ -295,11 +295,44 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
     }
 
     public void join(Treap<K, V> t) {
+        TreapNode t_root = ((TreapMap<K, V>) t).root;
+
+        TreapNode arb = new TreapNode(null, null);
+        if(t_root.key.compareTo(root.key)< 0){
+            arb.left = t_root;
+            arb.right = root;
+        }
+        else{
+            arb.left = root;
+            arb.right = t_root;
+        }
+
+        root = removeRec(null, arb);
+    }
+
+    public TreapNode getRoot(){
+        return root;
+    }
+
+    public void meld(Treap<K, V> t){
 
     }
 
-    public void meld(Treap<K, V> t) throws UnsupportedOperationException{
-        throw new UnsupportedOperationException("Not done yet!");
+
+    public TreapNode meldRec (Treap<K, V> t){
+        TreapNode t_root = ((TreapMap<K, V>) t).root;
+
+        if(root == null){
+            return t_root;
+        }
+        if(t_root == null){
+            return root;
+        }
+
+        Treap<K, V> split_t[] = t.split((K)t_root.key);
+        Treap<K, V> split_this[] = split((K)t_root.key);
+
+        return join()
     }
 
     public void difference(Treap<K, V> t) throws UnsupportedOperationException{
@@ -351,8 +384,33 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         return new TreapMapIterator(root);
     }
 
-    public double balanceFactor() throws UnsupportedOperationException{
-        throw new UnsupportedOperationException("Not done yet!");
+    public double balanceFactor() {
+        int height = height(root);
+
+        Iterator<K> iter = (TreapMapIterator) this.iterator();
+
+        int count=0;
+        while(iter.hasNext()){
+            iter.next();
+            count++;
+        }
+
+        int pwr =0;
+        while(Math.pow(2, pwr)-1 <= count){
+            pwr++;
+        }
+
+        int min_height = pwr-1;
+
+        return (double) height / (double) min_height;
+    }
+
+    public int height(TreapNode root){
+        if(root == null){
+            return 0;
+        }
+
+        return 1 + Math.max(height(root.left), height(root.right));
     }
 }
 
