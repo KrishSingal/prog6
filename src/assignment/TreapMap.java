@@ -532,7 +532,7 @@ class TreapNode<K extends Comparable<K>, V> {
         return "[" + priority + "]" + " <" + key + ", " + value + ">" + "\n";
     }
 }
-
+/*
 class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
     TreapNode root;
     TreapNode first_left;
@@ -546,13 +546,13 @@ class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
         count=0;
     }
 
-    /*public void inOrder (TreapNode root){
+    public void inOrder (TreapNode root){
         if(root!= null) {
             inOrder(root.left);
             ordered.add((K) root.key);
             inOrder(root.right);
         }
-    } */
+    }
 
     public TreapNode successor(TreapNode find){
         if(find.right != null){
@@ -588,9 +588,9 @@ class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
     }
 
     public K next() throws NoSuchElementException{
-        /*if(count != 0){
+        if(count != 0){
             current_node = successor(current_node);
-        }*/
+        }
 
         if(!hasNext()){
             throw new NoSuchElementException("No more elements!");
@@ -604,5 +604,33 @@ class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
 
     public boolean hasNext(){
         return current_node != null;
+    }
+}*/
+
+class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
+    TreapNode root;
+    Stack<TreapNode> st = new Stack<>();
+
+
+    public TreapMapIterator (TreapNode root){
+        this.root = root;
+        addLeft(root);
+    }
+
+    public void addLeft(TreapNode curr){
+        while(curr!= null){
+            st.push(curr);
+            curr = curr.left;
+        }
+    }
+
+    public K next(){
+        TreapNode ret = st.pop();
+        addLeft(ret.right);
+        return (K)ret.key;
+    }
+
+    public boolean hasNext(){
+        return !st.isEmpty();
     }
 }

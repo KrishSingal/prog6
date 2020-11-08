@@ -42,9 +42,10 @@ public class TestingTreap {
         tmap.meld(tmap2);
         System.out.println(tmap);
 
-        /*while(ti.hasNext()){
+        Iterator ti = tmap.iterator();
+        while(ti.hasNext()){
             System.out.println(ti.next());
-        }*/
+        }
 
 
     }
