@@ -6,33 +6,46 @@ public class TestingTreap {
         Treap<Integer, Integer> tmap = new TreapMap<Integer, Integer>();
         tmap.insert(10,6);
         tmap.insert(5,9);
-        tmap.insert(100, 5);
-        tmap.insert(5, 10);
-        //tmap.remove(5);
+        tmap.insert(-2, 14);
+
         System.out.println(tmap);
 
-        Iterator<Integer> treap_iterator = tmap.iterator();
 
-        System.out.println(treap_iterator.hasNext());
+        /*
+        Treap<Integer, Integer> [] subs = tmap.split(101);
+        System.out.println(subs[0]);
+        System.out.println(subs[1]);
+        System.out.println(((TreapMap<Integer, Integer>)subs[1]).root == null);
+        */
 
-
-        while(treap_iterator.hasNext()){
-            System.out.println(treap_iterator.next());
-        }
-
+        /*
+        System.out.println("Join Test");
         Treap<Integer, Integer> tmap2 = new TreapMap<Integer, Integer>();
+        tmap2.insert(-1,4);
+        tmap2.insert(0, 50);
+        tmap2.insert(4, 0);
+        tmap.join(tmap2);
+        System.out.println(tmap);
+        */
 
-        tmap2.insert(1,0);
-        tmap2.insert(2,0);
-        tmap2.insert(3,0);
 
+        System.out.println("Meld test");
+        Treap<Integer, Integer> tmap2 = new TreapMap<Integer, Integer>();
+        tmap2.insert(7, 50);
+        tmap2.insert(-1,4);
+        tmap2.insert(8, 99);
+
+
+        System.out.println(tmap);
         System.out.println(tmap2);
 
-
-        tmap.join(tmap2);
-
+        tmap.meld(tmap2);
         System.out.println(tmap);
 
-        // System.out.println(treap_iterator.next());
+        /*while(ti.hasNext()){
+            System.out.println(ti.next());
+        }*/
+
+
     }
 }
