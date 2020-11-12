@@ -5,13 +5,16 @@ import java.util.*;
 public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
 
     public TreapNode root;
+    public int modCount;
 
-    public TreapMap (){
+    public <K, V> TreapMap (){
         root = null;
+        modCount =0;
     }
 
-    public TreapMap(TreapNode root){
+    public <K, V> TreapMap(TreapNode root){
         this.root = root;
+        modCount =0;
     }
 
     public V lookup(K key){
@@ -19,7 +22,9 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             return null;
         }
 
-        return (V) find(key, root).value;
+        TreapNode found = find(key, root);
+
+        return found == null? null : (V) found.value;
     }
 
     private TreapNode find(K key, TreapNode root){
@@ -29,7 +34,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         }
 
         // Node is found
-        if(key.equals(root.key)){
+        if(key.compareTo((K) root.key) == 0){
             return root;
         }
 
@@ -40,78 +45,25 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             return find(key, root.right);
     }
 
-    /*public TreapNode iterFind(K key, TreapNode root){
-        if(root ==null){
-            return null;
-        }
+    public void insert (K key, V value) throws IllegalArgumentException{
+        modCount++;
 
-        parentFind = null;
-        type = ChildType.ROOT;
-
-        while(root != null){
-            if(key.compareTo((K) root.key) < 0){
-                root = root.left;
-                parentFind = root;
-                type = ChildType.LEFT;
-
-            }
-            else if(key.compareTo((K) root.key) > 0){
-                root = root.left;
-                parentFind = root;
-                type = ChildType.RIGHT;
-            }
-            else {
-                return root;
-            }
-
-        }
-        parentFind = null;
-        type = ChildType.NOT_FOUND;
-        return null;
-    }*/
-
-    /*
-    public void insert(K key, V value){
-        TreapNode toInsert = new TreapNode(key, value);
-
-        if(root == null){
-            root = toInsert;
-        }
-        else{
-            remove(key); // remove any old value associated with key
-
-            TreapNode parent = root;
-            TreapNode curr = root;
-
-            while(curr != null){
-                parent = curr;
-
-                if(key.compareTo((K) curr.key) < 0){
-                    curr = curr.left;
-                }
-                else
-                    curr = curr.right;
-            }
-
-            if(key.compareTo((K) parent.key) < 0){
-                parent.left = toInsert;
-                toInsert.type = TreapNode.ChildType.LEFT;
-            }
-            else {
-                parent.right = toInsert;
-                toInsert.type = TreapNode.ChildType.RIGHT;
-            }
-
-            heapify(toInsert.parent);
-
-        }
-    }*/
-
-    public void insert (K key, V value){
         if(key != null && value != null) {
+            // Check to ensure user is entering all
+            if(root != null) {
+                try {
+                    key.compareTo((K) root.key);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Cannot make a treap with differing entry types");
+                }
+            }
+
             remove(key);
             root = insertRec(new TreapNode(key, value), root);
         }
+
+        else
+            throw new IllegalArgumentException("Please insert a non-null entry!");
     }
 
     // Overloaded insert that recursively inserts and heapifies
@@ -141,17 +93,6 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         return root;
     }
 
-    /*public void heapify (TreapNode curr){
-        while(curr.parent.priority < curr.priority){
-            if(curr.type == TreapNode.ChildType.LEFT){
-                rotateRight(curr.parent);
-            }
-            else if (curr.type == TreapNode.ChildType.RIGHT){
-                rotateLeft(curr.parent);
-            }
-        }
-    }*/
-
     public TreapNode rotateRight(TreapNode pivot){
         TreapNode newRoot = pivot.left;
         pivot.left = newRoot.right;
@@ -168,70 +109,25 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         return newRoot;
     }
 
-    // Overloaded insert method that recursively inserts
-    /*
-    public TreapNode insert (K key, V value, TreapNode root){
-        if(root==null){
-            return new TreapNode(key,value);
+    public V remove (K key) throws IllegalArgumentException{
+        modCount++;
+
+        if(key == null){
+            throw new IllegalArgumentException("Please remove for a non-null key!");
         }
 
-        if((root.key).compareTo(key) > 0){
-            root.left = insert(key, value, root.left);
-        }
-        else{
-            root.right = insert(key, value, root.right);
-        }
-
-        return root;
-    }*/
-
-    /*
-    public V remove(K key){
-        TreapNode toRemove = iterFind(key, root);
-
-        if(toRemove != null){
-            remove(toRemove, parentFind, type);
-            return (V) toRemove.value;
-        }
-        else
-            return null;
-    }
-
-    public void remove (TreapNode curr, TreapNode parent, ChildType type){
-        if(curr.left == null && curr.right == null){
-            if(type == ChildType.LEFT){
-                parent.left = null;
+        if(root != null){
+            try{
+                key.compareTo((K)root.key);
             }
-            else
-                parent.right = null;
-        }
-
-        else if(curr.right == null || (curr.left != null && curr.left.priority >= curr.right.priority)){
-            if(type == ChildType.LEFT){
-                parent.left = rotateRight(curr);
-                remove(curr, parent.left, ChildType.RIGHT);
-            }
-            else {
-                parent.right = rotateRight(curr);
-                remove(curr, parent.left, ChildType.RIGHT);
+            catch(Exception e){
+                throw new IllegalArgumentException("Please remove the proper type");
             }
         }
 
-        else{
-            if(type == ChildType.LEFT){
-                parent.left = rotateLeft(curr);
-                remove(curr, parent.left, ChildType.LEFT);
-            }
-            else {
-                parent.right = rotateLeft(curr);
-                remove(curr, parent.left, ChildType.LEFT);
-            }
-        }
-    }*/
-
-    public V remove (K key){
-        root = removeRec(key,root);
         TreapNode removed = find(key, root);
+        root = removeRec(key,root);
+
 
         if(removed != null){
             return (V)removed.value;
@@ -240,7 +136,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             return null;
     }
 
-    public TreapNode removeRec( K key, TreapNode root){
+    public TreapNode removeRec(K key, TreapNode root){
         if(root == null){
             return null;
         }
@@ -285,20 +181,21 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         return root;
     }
 
-    /*
-    public Treap<K, V> [] split(K key){
-        TreapNode maximum = new TreapNode(key, null);
-        maximum.priority = MAX_PRIORITY;
-        root = insertRec(maximum, root);
+    public Treap<K, V> [] split (K key) throws IllegalArgumentException{
+        modCount++;
+        if(key == null){
+            throw new IllegalArgumentException("Please split across a non-null key!");
+        }
 
-        Treap [] subTreaps = new TreapMap[2];
-        subTreaps[0] = new TreapMap(root.left);
-        subTreaps[1] = new TreapMap(root.right);
+        if(root != null){
+            try{
+                key.compareTo((K)root.key);
+            }
+            catch(Exception e){
+                throw new IllegalArgumentException("Please split across the proper type");
+            }
+        }
 
-        return subTreaps;
-    }*/
-
-    public Treap<K, V> [] split (K key){
         return split(this, key);
     }
 
@@ -313,27 +210,32 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         subTreaps[0] = new TreapMap(t_root.left);
         subTreaps[1] = new TreapMap(t_root.right);
 
+        //t_root = removeRec(key, t_root);
+
         return subTreaps;
     }
 
-    /*public void join(Treap<K, V> t) {
-        TreapNode t_root = ((TreapMap<K, V>) t).root;
-
-        TreapNode arb = new TreapNode(null, null);
-        if(t_root.key.compareTo(root.key)< 0){
-            arb.left = t_root;
-            arb.right = root;
-        }
-        else{
-            arb.left = root;
-            arb.right = t_root;
-        }
-
-        root = removeRec(null, arb);
-    }*/
-
     public void join(Treap<K, V> t){
+        modCount++;
+        if(t == null){
+            throw new IllegalArgumentException("Please join a non-null treap!");
+        }
+
+        if(! (t instanceof TreapMap)){
+            throw new IllegalArgumentException("Please join a treap of the same implementing class!");
+        }
+
+
         TreapNode t_root = ((TreapMap<K, V>) t).root;
+
+        if(t_root != null && root != null){
+            try{
+                t_root.key.compareTo(root.key);
+            }
+            catch(Exception e){
+                throw new IllegalArgumentException("Cannot join treaps of different types");
+            }
+        }
 
         root = join(this.root, t_root);
     }
@@ -364,6 +266,11 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
     }
 
     public void meld(Treap<K, V> t){
+        modCount++;
+        if(t == null){
+            throw new IllegalArgumentException("Please meld a non-null treap!");
+        }
+
         root = meld(this, t);
     }
 
@@ -372,91 +279,27 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
         TreapNode t_root = ((TreapMap<K, V>) t).root;
 
         if(f_root == null){
-            System.out.println("f_root is null");
+            //System.out.println("f_root is null");
             return t_root;
         }
         else if(t_root ==null){
-            System.out.println("t_root is null");
+            //System.out.println("t_root is null");
             //System.out.println("Returning" + f_root.key);
             return f_root;
         }
-
-        //if(f_root.priority > t_root.priority ){
-            System.out.println("Splitting across" + f_root.key);
             Treap<K, V> [] subt = split(t, (K)f_root.key);
-
-            System.out.println("subf[0]:");
-            System.out.println(new TreapMap<K, V> (f_root.left));
-            System.out.println("subf[1]:");
-            System.out.println(new TreapMap<K, V> (f_root.right));
-            System.out.println("subt[0]:");
-            System.out.println(subt[0]);
-            System.out.println("subt[1]:");
-            System.out.println(subt[1]);
 
             TreapNode newRoot = join(meld(new TreapMap<K, V> (f_root.left), subt[0]), meld(new TreapMap<K, V> (f_root.right), subt[1]));
             TreapNode toPlace = new TreapNode((K)f_root.key, (V)f_root.value);
             toPlace.priority = f_root.priority;
             return insertRec(toPlace, newRoot);
-        //}
-        /*
-        else{
-            System.out.println("Splitting across" + t_root.key);
-            Treap<K, V> [] subf = split(f, (K)t_root.key);
-            Treap<K, V> [] subt = split(t, (K)t_root.key);
-
-            System.out.println("subf[0]:");
-            System.out.println(subf[0]);
-            System.out.println("subf[1]:");
-            System.out.println(subf[1]);
-            System.out.println("subt[0]:");
-            System.out.println(subt[0]);
-            System.out.println("subt[1]:");
-            System.out.println(subt[1]);
-
-            return join(meld(subf[0], subt[0]), meld(subf[1], subt[1]));
-        }*/
     }
-
-
-    /*public TreapNode meldRec (Treap<K, V> t){
-        TreapNode t_root = ((TreapMap<K, V>) t).root;
-
-        if(root == null){
-            return t_root;
-        }
-        if(t_root == null){
-            return root;
-        }
-
-        Treap<K, V> split_t[] = t.split((K)t_root.key);
-        Treap<K, V> split_this[] = split((K)t_root.key);
-
-        return join()
-    }*/
 
     public void difference(Treap<K, V> t) throws UnsupportedOperationException{
         throw new UnsupportedOperationException("Not done yet!");
     }
 
     public String toString() {
-        /*String ret ="";
-
-        Stack<TreapNode> nodes = new Stack<TreapNode> ();
-        nodes.push(root);
-        // Iterative pre-order traversal
-        while(!nodes.isEmpty()){
-            TreapNode now = nodes.pop();
-            ret += now;
-
-            if(now.right != null){
-                nodes.push(now.right);
-            }
-            if(now.left != null){
-                nodes.push(now.left);
-            }
-        }*/
-
         String ret = buildString(root, 0);
 
         return ret;
@@ -481,7 +324,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
     }
 
     public Iterator<K> iterator(){
-        return new TreapMapIterator(root);
+        return new TreapMapIterator(this);
     }
 
     public double balanceFactor() {
@@ -500,7 +343,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             pwr++;
         }
 
-        int min_height = pwr-1;
+        int min_height = pwr;
 
         return (double) height / (double) min_height;
     }
@@ -532,89 +375,18 @@ class TreapNode<K extends Comparable<K>, V> {
         return "[" + priority + "]" + " <" + key + ", " + value + ">" + "\n";
     }
 }
-/*
-class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
-    TreapNode root;
-    TreapNode first_left;
-    TreapNode current_node;
-    int count;
-
-    public TreapMapIterator(TreapNode root){
-        this.root = root;
-        first_left = null;
-        current_node = minimum(root);
-        count=0;
-    }
-
-    public void inOrder (TreapNode root){
-        if(root!= null) {
-            inOrder(root.left);
-            ordered.add((K) root.key);
-            inOrder(root.right);
-        }
-    }
-
-    public TreapNode successor(TreapNode find){
-        if(find.right != null){
-            return minimum(find.right);
-        }
-        else {
-            first_left = null;
-            firstLeft(root, find);
-            return first_left;
-        }
-    }
-
-    public void firstLeft(TreapNode curr, TreapNode find){
-        if(curr != null) {
-
-            if (find.key.compareTo(curr.key) < 0) {
-                first_left = curr;
-                firstLeft(curr.left, find);
-            }
-            else if (find.key.compareTo(curr.key) > 0) {
-                firstLeft(curr.right, find);
-            }
-
-        }
-    }
-
-    public TreapNode minimum(TreapNode curr){
-        if(curr.left == null){
-            return curr;
-        }
-
-        return minimum(curr.left);
-    }
-
-    public K next() throws NoSuchElementException{
-        if(count != 0){
-            current_node = successor(current_node);
-        }
-
-        if(!hasNext()){
-            throw new NoSuchElementException("No more elements!");
-        }
-
-        K ret = (K)current_node.key;
-        current_node = successor(current_node);
-        count++;
-        return ret;
-    }
-
-    public boolean hasNext(){
-        return current_node != null;
-    }
-}*/
 
 class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
     TreapNode root;
     Stack<TreapNode> st = new Stack<>();
+    int initialModCount;
+    TreapMap treapinst;
 
-
-    public TreapMapIterator (TreapNode root){
-        this.root = root;
+    public TreapMapIterator (TreapMap inst){
+        this.root = inst.root;
         addLeft(root);
+        this.initialModCount = inst.modCount;
+        this.treapinst = inst;
     }
 
     public void addLeft(TreapNode curr){
@@ -624,13 +396,24 @@ class TreapMapIterator<K extends Comparable<K>> implements Iterator<K> {
         }
     }
 
-    public K next(){
+    public K next() throws ConcurrentModificationException{
+        if(!hasNext()){
+            throw new NoSuchElementException("There is no next Element!");
+        }
+
+        if(treapinst.modCount != initialModCount){
+            throw new ConcurrentModificationException("Can't Modify the treap while iterating!");
+        }
+
         TreapNode ret = st.pop();
         addLeft(ret.right);
         return (K)ret.key;
     }
 
-    public boolean hasNext(){
+    public boolean hasNext() throws ConcurrentModificationException{
+        if(treapinst.modCount != initialModCount){
+            throw new ConcurrentModificationException("Can't Modify the treap while iterating!");
+        }
         return !st.isEmpty();
     }
 }
