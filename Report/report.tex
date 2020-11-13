@@ -1,0 +1,302 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amsthm,amssymb,hyperref,varwidth, tcolorbox, enumerate, asymptote, fancyhdr, mdframed, subfig, float, tikz} 
+% \usepackage{wrapfig}
+\usepackage[margin=1in]{geometry}
+\linespread{1.1}
+\setlength\parindent{0pt}
+\setlength{\parskip}{0em}
+
+% long tables
+\RequirePackage{longtable}
+
+% table over multiple pages
+\RequirePackage{tabu}
+\usepackage{/Users/Krish/Desktop/mastermacros}
+% macros
+\def\tt{\texttt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{314H Data Structures Honors}
+\chead{Krish Singal} % Alphabetic :P
+\rhead{\today}
+\cfoot{Page \thepage}
+\newlength\mylen
+
+%\documentclass[tikz,border=2mm]{standalone}
+\usetikzlibrary{matrix}
+
+\def\IAE{\tt{IllegalArgumentException}}
+\def\NPE{\tt{NullPointerException}}
+\def\TM{\tt{TreapMap}}
+\def\CME{\tt{ConcurrentModificationException}}
+\def\Treap{\tt{Treap}}
+
+\def\lu{\tt{lookup()}}
+\def\ins{\tt{insert()}}
+\def\rem{\tt{remove()}}
+\def\split{\tt{split()}}
+\def\join{\tt{join()}}
+
+\def\meld{\tt{meld()}}
+\def\bf{\tt{balanceFactor()}}
+
+\def\tn{\tt{TreapNode}}
+\def\tmi{\tt{TreapMapIterator}}
+
+\def\key{\tt{key}}
+\def\val{\tt{value} }
+
+\begin{document}
+\begin{center}
+    \huge\textbf{Program 6 - TreapMap}
+\end{center}
+
+\section{Overview and Goals}
+\subsection{Overview}
+The intent of this project is to implement the logic and interface for the TreapMap, a map based on the foundational concept of a randomized Balanced Binary Tree with the Heap property. This assignment allowed me to explore recursive alorgithms in great detail, explore the concept of generics in Java, and make key design decisions on data storage and computation. 
+\subsection*{Goals}
+My goals for this project included implementing a robust set of algorithms that efficiently maintain the BST and heap properties of the treap for all supported operations and functioned as a map on all possible key/value pair types. Additionally, I aimed to write a robust testing suite that would catch any and all errors in my implementation and narrow down the problem areas. I also focused some of my time on implementing extra functionalities such as \tt{balanceFactor()} and \tt{meld()}.
+\section{Description}
+\subsection{Solution Design}
+The essential modules in this project is \tt{\TM.java} which houses the \tt{\TM{}}, \tt{TreapNode}, and \tt{TreapMapIterator} classes. As is implied from their names, the \TM{} class implements all operation functionality logic and maintains the internal structure of the treap, the \tt{TreapNode} class stores and maintains the internal structure of eahc individual node that comrpises the treap, while the \tt{TreapMapIterator}
+class implements the logic to efficiently iterate over the treap in an in order fashion. I  outline overarching design and data structures for each of the components below.
+\subsubsection{\TM}
+The crux of this project is efficiently modifying and storing the treap structure while maintaining correctness of the Binary Search Tree and Max-Heap Properties. By doing so, the treap is balanced on average due to the randomness introduced in the form of priorities. Because the underlying structure of the treap is that of a Binary Search Tree, I chose to use the canonical representation of \tn{} objects to allow efficient traversal, rotations, etc. The \TM{} class stores a reference to the current root of the treap which is updated according to the various operations performed. \\ \\
+An important component of this module is the use of generics. Because \TM{} should behave as a standard map, any key/value pairs types should be allowed (with the added restriction that the key must be Comparable). Thus, type checking was enforced throughout the implementation and special consideration was taken to ensure correctness of item comparison (use of \tt{compareTo()}).
+\subsubsection{\tn}
+As mentioned above, the \tn{} class implements the data representation for nodes in the treap. Each \tn{} has references to its two children, and stores its \tt{key},  \tt{value}, and randomized \tt{priority}. Because each node is represented by an object with pointers to its children, rotations can be performed in $O(1)$ time. \\ \\
+Generics are also an important consideration here where the key and value are specified as generic types \tt{K} and \tt{V}.
+\subsubsection{\tmi}
+The \tmi{} class implements iterator functionaity for a regular BST using stacks to achieve an $O(1)$ amortized iteration. A more thorough explanation of this can be found in section 3.4. Once again, generics are emphasized to ensure that the iterator traverses over type \tt{K} of all keys in the treap.
+\subsection{Assumptions}
+Below are some of the assumptions that are made in the implementation of my solution
+\begin{itemize}
+	\item \textbf{Disjoint and Strict Key Magnitude Treaps in \tt{join()}} - It is assumed that the two treaps provided to \tt{join()} are disjoint and that one treap has keys that are strictly less than the other. 
+	\item \textbf{TreapMap Instantiation Without Generics} - It is assumed that the user does not instantiate a \TM{} without the use of generics. This would allow insertion and storage of different key/value types within the same treap, resulting in \tt{ClassCastExceptions}. I do handle these cases, by type checking the input. 
+	\item \textbf{Reasonable Input Size} - It is assumed that the user does not enter extreme input sizes. As discussed in section 3.1, this could potentially result in \tt{OutOfMemoryErrors}, \tt{StackOverflowError},  etc.
+\end{itemize}
+
+\section{Discussion}
+\subsection{Scope and Quality of Solution}
+While my implementation of the \TM{} covers many edge cases and invalid inputs, it still has some notable limitations
+\begin{itemize}
+	\item \textbf{Memory Limits} - An important limitation of my implementation is the reliance on memory to (a) store the nodes and (b) perform and handle recursive calls for operations. Thus, large inputs are not ideal for the vast amount of memory storing Node objects takes. Furthermore the upper bound for static storage is greatly reduced due to the dynamic space needed for operations on large treaps which may involve large recursive calls, and potential OutOfMemoryErrors or overflow of the recursive stack.
+	\item \textbf{Guarantees on Balance Statistics} - Unlike Red Black Trees or AVL Trees, Treaps do not have a rigid set of rules that guarantee tree height on the order of $O(log (n))$. Because the implementation of the treap is heavily dependent on randomization, it may be the case that the tree degenerates to a linked list. While this is highly unlikely for sufficiently large input, the probability is non-zero. This results in inefficient operations and a loss of the Balanced Binary Search Tree property. 
+	\item \tt{difference()} - the \tt{difference()} function is not implemented, so the implementation of the \TM{} is considered incomplete.
+\end{itemize}
+ There are tangible and finite cases under which my implementation will fail as noted by the above limitations. That being said, my solution is designed to minimize the time and space complexity of required operations in an effort to limit the resources required to maintain and modify the provided data. Generics are also used in an effort to make the implementation of \TM{} more universally viable. Key design choices regarding choice of data structure, algorithmic approaches, generics, and exception handling are essential to my solution.
+ 
+\subsection{\TM}
+Here, I describe each operation in detail, including discussion of over-arching algorithm and data structures used. 
+\subsubsection{Tree Rotations}
+A major component of treap operations such as \ins{} and \rem{} is tree rotations. Here, I describe the overarching logic of a left rotation (analagous logic can be applied to right rotations). Consider my implementation of \tt{leftRotate()} which takes in \tn{} \tt{pivot} to rotate left around and returns the new root \tn{}.
+\begin{enumerate}
+	\item A new \tn{} \tt{newRoot} is assigned to the right child of \tt{pivot}. This intuitively makes sense since a left rotation around \tt{pivot} would make its right child the new root of the treap. This step simply initializes the new root to point at the correct node, setting up the next few pointer switches.
+	\item The right child of \tt{pivot} is assigned to the left child of \tt{newRoot}. This completes the child transfer step that must occur to ensure \tt{newRoot} will have only 2 children. The BST property is maintained here. 
+	\item The left child of \tt{newRoot} is assigned to \tt{pivot}. Once again this makes intuitive sense from the left rotation concept.
+	\item \tt{newRoot} is returned.
+\end{enumerate}
+As can be seen, these rotations maintain the BST property of the treap, while providing an efficient method to correct for the max heap property. Since the only operations involved are pointer re-allocations, we can conclude that the tree rotation can be performed in $O(1)$ time.
+\subsubsection{\ins}
+I took a recursive approach to the \ins{} function and therefore wrote a recursive method \tt{insertRec()} that was called from the driver function \ins. The recursive algorithm is described in detail below
+\begin{itemize}
+	\item \textbf{Parameters: } The following parameters are passed to the recursive function and completely describe a unique recursive state
+	\begin{itemize}
+		\item \tn{} \tt{toInsert} that is the \tn{} to be inserted into the treap. This does not change over recursive calls.
+		\item \tt{root} is the root of the current subtreap we are located at. 
+	\end{itemize}
+	\item \textbf{Return Type: } The recursive implementation returns a \tn{} that is the new root of subtreap at that position.
+	\item \textbf{Base Case: } If \tt{root} is \tt{null}, we return \tt{toInsert} as the new root of the subtreap at the leaf position (A special consideration base case is made for the case where \tt{toInsert} is \tt{null}. In this case, nothing is to be added to the treap, so the original root is retuned).
+	\item \textbf{Recursive Step on the Way Down: } This is a standard BST insertion step where we determine whether to move right or left at the current state based on how \tt{toInsert} compares with the current \tt{root}. We set the respective child of the current \tt{root} to be the result of \ins on the subtreap rooted at that child. Once we have trickled all the way down a unique path on the tree, this completes the step of finding the leaf position to insert our node. 
+	\item \textbf{Recursive Step on the Call Stack Back Up: } Here, the insertion algorithm differs from the standard BST insertion. Because our inserted node may have a high priority and we want to maintain the max-heap property to decrease the balance factor of our treap, we must perform rotations on the way up to correctly place \tt{toInsert} while maintaining both the BST and max-heap properties. We do this by checking which child (if any) of the current root has a higher priority than itself (note that both children can never have higher priorities than the current root since we start off with a legal treap). The current root is then updated to the result of the respective rotation around the old root and is returned. 
+\end{itemize}
+In essence, the \ins algorithm I implemented travels down and back up a given unique path, to first find the leaf location of insertion in accordance with the BST properety, then performs rotations on the way back up in accordance with the max heap property. Therefore, the time complexity of this solution is $O(h)$ where $h$ is the height of the treap. It can also be shown that the time complexity is $O(log(n))$ in the average case due to randomness where $n$ is the number of nodes in the treap.
+
+\subsubsection{\rem}
+Similar to the \ins, I took a recursive approach to the \rem{} function and therefore wrote a recursive method \tt{removeRec()} that was called from the driver function \rem. The recursive algorithm is described in detail below
+
+\begin{itemize}
+	\item \textbf{Parameters: } The following parameters are passed to the recursive function and completely describe a unique recursive state
+	\begin{itemize}
+		\item \tn{} \tt{K key} that is the key to be removed.
+		\item \tt{root} is the root of the current subtreap we are located at. 
+	\end{itemize}
+	\item \textbf{Return Type: } The recursive implementation returns a \tn{} that is the new root of subtreap at that position.
+	\item \textbf{Base Case: } If \tt{root} is \tt{null}, we return \tt{null} as the new root of the subtreap since the treap was originally empty, and nothing can be removed. 
+	\item \textbf{Recursive Step to Find the Node to Remove: } This is a standard BST removal step where we determine whether to move right or left at the current state based on how \tt{key} compares with the key of the current \tt{root}. We set the respective child of the current \tt{root} to be the result of \ins on the subtreap rooted at that child. This step ends once we reach a node with key equal to the key that must be removed (if the key is not present in the treap, this step may not end until we reach a leaf, in which case null is returned).
+	\item \textbf{Recursive Step to Remove: } Here, the removal algorithm differs from the standard BST removal. We consider $3$ exhaustive cases that outline the possible types of node the be removed
+	\begin{enumerate}
+		\item \textbf{Node to be Removed has no children: }In this case, we can simply return \tt{null} to be the new root of this subtreap. This essentially snips off the node to be removed.
+		\item \textbf{Node to be Removed has One Child: } In this case, we return the child to be the new root of this subtreap. This essentially splices out the node to be removed.
+		\item \textbf{Node to Be Removed has Two Children: } In this case, we must check which child has the higher priority and assign the new root of this subtreap to be the result of the appropriate rotation (making the higher priority child the new root). We then recurse again on the tree to remove the specified key since it has now be rotated down.
+	\end{enumerate}
+\end{itemize}
+In essence, the \rem algorithm I implemented travels down the treap once, and separates the recursive steps in $2$ to first find the node to be removed, then perform the removal via appropriate rotations to maintain the BST and heap properties. Therefore, the time complexity of this solution is $O(h)$ where $h$ is the height of the treap. It can also be shown that the time complexity is $O(log(n))$ in the average case due to randomness where $n$ is the number of nodes in the treap.
+
+\subsubsection{\lu}
+The \lu{} function is implemented recursively using a standard BST search algorithm that travels down a unique path on the treap and returns the found node. The recursive details of this are very similar to the basic BST search outlined as a part of the \rem{} discussion, so they will be ommitted here. Therefore, the time complexity of this solution is $O(h)$ where $h$ is the height of the treap. It can also be shown that the time complexity is $O(log(n))$ in the average case due to randomness where $n$ is the number of nodes in the treap.
+\subsubsection{\split{}}
+The \split{} algorithm follows a basic concept to split a treap into two halves where one has keys less than a specified key, and the other has keys greater than the same specified key. A new node with \tt{MAX\_PRIORITY} and specified key is inserted into the treap. By the max heap property of the treap enforced during insertion, this node will necessarily become the new roof the treap. Furthermoree, due to the BST property that the \ins{} enforces, the entire left subtreap must have keys less than the new root, while the entire right subtreap must have keys greater than the key of the new root. Because this operation just performs one insertion and multiple constant time operations such as instantiating the new node, the time complexity of this solution is $O(h)$ where $h$ is the height of the treap. It can also be shown that the time complexity is $O(log(n))$ in the average case due to randomness where $n$ is the number of nodes in the treap. \\ \\
+A key design decision made here included specifying the new "max node" 's value to be \tt{null} since this is the only universal instance of type \tt{V}. 	
+\subsubsection{\join{}}	
+The \join{} algorithm follows a basic concept to join two treaps with the necessary assumptions. A new node with key and value of \tt{null} is explicitly made the root by setting its children to the roots of the treaps to be joined. Here the children are assigned sides based on how their keys compare to the root. Note that here, we only need to check the comparison of the roots of each subtreap since we are guaranteed by assumption that all the keys in one of the treaps is larger than all those in the other. The arbitrary \tt{null} node is now removed from the treap (directly calling the recursive remove function so that \tt{null} key removal is acceptable). By the rules enforced during \rem{}, the BST and heap properties will be maintained in the resulting treap with all nodes. Because this operation just performs one removal and multiple constant time operations such as instantiating the new node, is $O(h)$ where $h$ is the height of the new joined treap. It can also be shown that the time complexity is $O(log(n+m))$ in the average case due to randomness where $n$ and $m$ are the sizes of the two treaps.
+\subsubsection{Generics}
+As mentioned previously, generics are a big part of the final implementation of \TM{}. To make the solution universal to all key/value pair types, I make sure to use universal comparisons using \tt{compareTo} on keys and check for any type mismatches. 
+\subsubsection{Invalid Input}
+Invalid input is handled very similarly for all operations. \tt{null} inputs are handled using either an \IAE{} or simply returning without doing anything. Parameters of the incorrect types result in an \IAE{} (this is a special case where the \TM{} is instantiated without generics).
+\subsubsection{Space Complexity}
+The main storage of data for this implementation is the \tn{} instances and their respective pointers. This scales linearly with the number of nodes present in the treap, so the space complexity is $O(n)$ where $n$ is the number of nodes in the treap.
+
+\subsection{\tn}
+As mentioned in section 2.1.2, the \tn{} class houses the representation of data nodes that (along with the respective pointers) comprise the treap. An important design decision I made here had to do with choosing the best way to represent connections between nodes so as to maximize efficiency. The two main options for the overarching representation were a pointer based connection or an array based representation where the children for a given node in position $i$ can be found in positions $2i+1$ and $2i+2$. While it is true that the array based representation has a slight edge in terms of space complexity since no explicit pointers need to be stored, it loses out greatly in terms of time complexity of operations. To see why this is true, consider the rotation operation that is required for both the \ins{} and \rem{} functions. This can be performed in $O(1)$ time with a pointer based representation while the array based representation requires $O(n)$ time asymptotically due to the shifting and manipulation of nodes in the array. Due to this, I decided to go with the pointer based representation. 
+\subsubsection{Data Fields}
+The data fields each \tn{} stores is listed below
+\begin{itemize}
+	\item \tn{} \tt{left} - The left child of this \tn{}. \tt{null} if it has no left child.
+	\item \tn{} \tt{right} - The right child of this \tn{}. \tt{null} if it has no right child.
+	\item \tt{K} \key - The key associated with this \tn{}
+	\item \tt{V} \value - The value associated with this \tn{}
+	\item \tt{int} \tt{priority} - The priority of this \tn{}
+\end{itemize}
+A key design design made here has to do with choosing which pointers each \tn{} should store. In some initial versions of my solution, I considered storing a pointer to \tt{parent} and an additional \tt{enum CHILD\_TYPE} (along with \tt{left} and \tt{right}) that indiciated whether this \tn{} was a left or right child. This was mainly due to my naive implementation of the \tmi{} where the successor was found iteratively at each call of  \tt{next()}. This posed significant challenges since it not only added extra space (still $O(1)$ for pointers asymptotically but in the short run, it does take up more memory), but would also require updates of all of these fields after all operations and rotations. A more thorough description of this initial solution can be found in section 3.4. \\ \\
+In the end, however, a more efficient implementation of the iterator allowed me to maintain correctness with pointers only to \tt{left} and \tt{right}.
+\subsubsection{Generics}
+As mentioned in section 1.2.1, generics were also a significant component of the \tn{} class since the node structure is the most basic representation of the data storage. Since all types must be accomodated for, the \tn{} class makes use of generics \tt{<K,V>}. Most of the type checking, however, occured in \TM{}, so it is guaranteed that the correct types are used in \tn{}. 
+\subsection{\tmi}
+\subsubsection{Algorithm}
+I went through a few different algorithms to implement the iterator logic before deciding on the best one. My initial solution was to pre-process an in-order traversal and return the items from the pre-processed cache. This, however, ends up being a simple wrapper over another iterator, so it is not a viable solution. The next solution I considered included storing the current node and recursively find its successor in \tt{next()} and \tt{hasNext()}. This resulted in an $O(logn)$ time complexity on average per operation where $n$ is the number of nodes inthe treap, and so was not a viable solution for the iterator operations which should do operations in $O(1)$ time. \\ \\
+The algorithm I finally decided on that satisfied the $O(1)$ operation time and was not a simple wrapper over another iterator made use of a global stack to essentially do a discrete in order traversal. The steps of the algorithm are outlined below.
+\begin{itemize}
+	\item Initial Push: \tt{pushLeft()} is called on the root node
+	\item \tt{pushLeft():} This function iteratively pushes the entire left ancestry of the passed node into the global stack. This ensures the furthest left child of the subtreap is visited before any others. 
+	\item \tt{next():} This function pops off the topmost node of the global stack and saves it as \tt{ret} since this is the node to return. \tt{pushLeft()} is called on the right child of \tt{ret}. This preserves the in order fashion on the right subtreap and maintains the "left-curr-right" ordering.
+	\item \tt{hasNext():} This function returns a boolean indicating whether there is a next element to iterate based on whether the stack is empty or not. 
+\end{itemize}
+The above algorithm essentially simulates the recursive in order traversal by working bottom up and left to right on any given subtreap. This algorithm has an $O(1)$ amortized time complexity per operation. To easily see this, note that each node is pushed and popped from the stack exactly once. The \tt{push()} and \tt{pop()} operations are $O(1)$, therefore there are a total of $2n$ constant time operations (where $n$ is the number of nodees in the treap). This results in an $O(n)$ complexity for the complete traversal and an $\frac{O(n)}{n} = O(1)$ amortized complexity per operation.
+\subsubsection{Concurrent Modification}
+One key design decision made here had to do with tracking concurrent modification of the treap while iterating. I decided to keep a counter called \tt{modCount} in the \TM{} instance that would increment everytime an operation is attempted. My \tt{Iterator} instance stores this specific \TM{} instance and stores the initial state of the modifier count. Then, the current \tt{modCount} of the \TM{} instance is checked at the beginning of every call to \tt{next()} or \tt{hasNext()}. If it is different from the original, then the treap was modified, and a \CME{} should be thrown.
+
+\subsection{Issues/Debugging}
+I encountered some issues with design decisions and debugging over the course of this project
+\begin{itemize}
+	\item \textbf{Debugging Recursive Functions: } Recursive functions are especially challenging to debug since it's hard to follow traces and minor bugs can have drastic impacts on the result. Some specific issues I had included minor mistakes in the handling of case 3 in \rem and \tt{StackOverFlowError}s with \meld.
+	\item \textbf{Generics: } I faced some initial difficulty in trying to understand how I should use Java Generics. This included doubts over the design of the \tn{} class (whether or not to use generics there) and universal implementations of all functions. As I read more of the specifications and instructions, I was able to decide on my current design.
+
+\end{itemize}
+\subsection{Edge Cases}
+This featured a multitude of edge cases that had the potential to break my program
+\begin{itemize}
+	\item \textbf{\tt{null} Input - } All five operations could potentially be passed \tt{null} input as one or more of their parameters. To handle this, I either chose to return without performing any operation or throw an \IAE{} depending on my interpretation of the interface specifications. 
+	\item \textbf{Concurrent Modification - } The intended behavior of any \tt{Iterator} is to recognize concurrent modification while iterating. To handle this I kept track of the number of modifications to the \TM{} and threw a \CME{} if the counter had increased during iteration.
+	\item \textbf{\Treap{} of the Incorrect Type in \join{} and \meld{} - } It is possible that another instance of \Treap{} that is not \TM{} is passed into \join{} and \meld{}. To handle this case, I check for the type of the passed instance and only perform the operation if it is of type \TM{}. 
+	\item \textbf{Duplicate Insertion - } It is possible that a duplicate key is inserted into the \TM{}. To handle this, I remove the previous entry associated with this key, then insert the new one. 
+	\item \textbf{Instantiation of \TM{} Without Generics - } In Java, standard data structures can be instantiated without generics and can then hold objects of many different types. However, this is not possible in the \Treap{} since insertion requires comparisons between existing elements and the element to be inserted. This would result in a \tt{ClassCastException}. To handle this, I perform a check in all functions to ensure the proper types are passed in and throw exceptions accordingly.
+	\item \textbf{Operations on Empty Treaps - } It is possible for operations such as \rem{}, \split{}, \lu{}, etc. to be called on empty treaps. Here, one must ensure that \NPE{} is not thrown by handling this case specially.
+\end{itemize}
+
+\subsection{Interesting Results}
+I tested the balance factor on $3$ different sizes and averaged them. The results are outlined in the table below. 
+\[
+\begin{array}{|c|c|c|c|}
+ 	\text{Number of Elements} & 10 & 50 & 100\\ 
+ 	\hline
+ 	\text{Average Balance Factor} & 1.385 & 1.827 & 1.891
+\end{array}
+\]
+I expected the larger treaps to have a lower balance factor, but it turned out to be the opposite. One reason for this might have to do with the sampling size of random numbers, but it is certainly an interesting and peculiar result!
+\subsection{Karma}
+\subsubsection{\meld}
+I implemented the \meld{} function recursively and abstracted it to perform meld on any two treaps. The logic is described below
+\begin{itemize}
+	\item \textbf{Parameters: } The following parameters are passed to the recursive function and completely describe a unique recursive state
+	\begin{itemize}
+		\item \tt{Treap<K, V> f} that is the first treap to be melded
+		\item \tt{Treap<K, V> f} that is the second treap to be melded
+	\end{itemize}
+	\item \textbf{Return Type: } The recursive implementation returns a \tn{} that is the new root of subtreap at that position.
+	\item \textbf{Base Case: } If either of the treaps are empty, we return the root of the other treap since a meld on an treap and an empty treap is itself.
+	\item \textbf{Recursive Step: } I split both treaps across the key of the root of the first treap (this is just an arbitrary choice. It works for any choice). The two resulting left subtreaps are recursively melded together and the two resulting right subtreaps are recursively melded together. Because we performed a split, we can be certain that the meld of the left subtreaps is strictly smaller than the meld of the right subtreaps (strictly smaller in the sense of key magnitudes). The two results are then joined together and the root of the resulting treap is returned. 
+\end{itemize}
+This function was very fun to implement! The time complexity of the implementation can be analyzed as $O(n log\frac{n}{m})$ where $n\geq m$ and $n$, $m$ are the number of nodes in the two treaps to be melded. I'm not entirely sure how to show this, but given more time, I would certainly think about this more! \\ \\
+The implementation of \meld{} forced me to rethink the design of my functions since I needed to be able to join two arbitrary treaps (not necessarily one treap with this instance) and similarly meld two arbitrary treaps. This led to design changes and abstractions of these functions.
+\subsubsection{Balance Statistics}
+To find the balance statistics of a given treap, I wrote two functions. \tt{height()} recursively found the height of a treap by adding 1 to the maximum of the heights of the two subtreaps. \tt{balanceFactor()} computes the number of nodes in the treap by doing a simple traversal and maintaining a counter, then computes the minimum subtreap height which is $\mathrm{minHeight} = \ceil{log_2(n+1)}$ (Given more time, I would prove this rigorously). The balance factor is then computed by performing $BF = \frac{height}{minHeight}$.
+
+\section{Testing}
+This assignment relied on proper testing to ensure that each component/module was functioning properly. An important component of testing included repetition on different combinations of key/value pair types. To do this, I tested my program on \tt{<Integer, Integer>}, \tt{<String, Character>}, and \tt{<ExtraKey, String>} (\tt{ExtraKey} is a custom comparable type that uses \tt{double} comparison)
+In order to perform thorough testing on my implementation, I wrote a testing suite using JUnit and performed visual inspection on program output. 
+\subsection{Black Box Testing}
+Black box testing using the \tt{toString()} was an effective tool to ensure that everything was working at a high level. By visually confirming the BST and Max-Heap properties, priorities, key/value pairs, etc. of the treap after each operation, I gained valuable insight into whether I was moving in the right direction.
+\subsubsection{Black Box Testing on \rem, \lu}
+While implementing my solution, I continuously tested my work by running a few basic tests in a separate file. When implementing \rem{} and \lu{} specifically, I took advantage of the return signature and printed the result of a given removal or lookup. This was performed alongside the usual inspection of the \tt{toString()} human readable representation and was of immense help as an extra verification for the algorithm's correctness. 
+\subsubsection{Black Box Testing on \ins, \split, \join}
+Here, the usual visual tests on the unmodified and modified treaps were used to test program correctness.
+\subsubsection{Black Box Testing on Inavlid Input}
+\label{blackboxinvalid}
+I tested a number of different cases that were designed to assess my program under invalid input. The notable tests are listed below
+\begin{itemize}
+	\item \tt{null} input in one or more parameters of all functions
+	\item Paramater of wrong type (when \TM{} is instantiated withot generics)
+	\item \Treap of wrong implementing class for \join{} and \meld{}
+\end{itemize}
+I mainly checked to see how my program handled invalid input, why it crashed if it did, and ensured the proper exception was being thrown after a fix.
+\subsubsection{Issues Found During Black Box Testing}
+\begin{itemize}
+	\item In particular, black box testing for word searching helped me find and fix bugs in my recursive functions. For example, in an initial implementation of the \split{} function, a key equal to the "split key" ended up in the left subtreap rather than the right one. While performing the black box tests, I was able to notice the irregularity in the printed treap and fix it immediately. 
+	\item Most edge cases listed in \hyperref[blackboxinvalid]{\color{blue}section 4.1.3} required revisions. In particular, \tt{null} input required checks and fixes in every function.
+\end{itemize}
+\subsection{White Box Testing}
+White box testing allowed me to be much more thorough in my testing and examine cases that were difficult to create otherwise. While Black Box testing gave me a good idea of how the implementations was faring as a whole, I used White box testing to ensure the underlying logic implementations were correct. Using JUnit, I implemented my own unit tests to individually test different functionalities. I will outline our process for testing those functionalities and some more specific cases here. \\ \\
+Note that the testing suite discussed here can be found in \tt{TreapMapTest.java} ,  \\ \tt{AdditionalTreapMapTest.java}, and \tt{TreapNodeTest()} and does NOT go through the interface in some instances. This testing suite is written specific to my implementation and probes the internal structure of my treap, nodes, etc. thus it will not pass for a given correct implementation of \Treap. The testing suite written for peer testing \tt{PeerTreapMapTest.java} works through the interface and will pass for any correct implementation of \Treap. My discussion below regards the testing suite specific to my implementation. For a thorough discussion of the peer test suite, look into \tt{testingReport.pdf}.
+\subsubsection{\tn{} White Box Testing}
+Testing on \tn{} instances were done using different key/value pair types to ensure robust coverage of cases.
+\begin{itemize}
+	\item \tt{priorityTest() - } This test asserted that all \tn{} instances were instantiated with a random priority in the range $[0, \tt{MAX\_PRIORITY})$. The purpose of this test was to ensure correctness of the random priorities.
+	\item \tt{keyValueTest() - } This test asserted that the stored \tt{key} and \tt{value} for each \tn{} was the same as intended. The purpose of this test was to ensure correctness of the key/value data storage
+	\item \tt{toStringTest() - } This test asserted that the returned string representation of the \tn{} instance was as intended (determined by the randomized priority and inserted key/value). The purpose of this test was to ensure correctness of the \tt{toString()} functionality.
+\end{itemize}
+\subsubsection{\TM{} White Box Testing}
+To test \TM{} I decided to take two main approaches: Randomized and Deterministic. Randomized tests entailed populating a \tt{HashMap} with random unique \key{}/\val{} pairs and inserting these into the \Treap for performance testing. The main advantage of randomized testing over deterministic testing was the possiblity for large scale testing. Thus, randomized testing was used for "regular cases" to ensure the intended functionality was working at a basic level. Deterministic testing on the other hand, made use of manually crafted test cases aimed at exploiting extreme edge cases. \\ \\
+My main strategy for testing was to perform operations individually, then check at each step whether different properties were maintained. I wrote a specific helper function to check this which is described below alongside the specific tests. Note that different verisons of these functions were made to account for different generic types, but the discussion will only describe the underlying logic that each version possesses.\\ \\
+\textbf{Helper Method: \tt{checkProperties() }}\\ 
+The \tt{checkProperties()} helper method checks that a given treap satisifes the following properties. Note that this function directly probes the internal structure of the treap, given the root node, and traverses through it step by step rather than using an iterator wrapper. This adds an extra layer of verification.
+\begin{itemize}
+	\item \textbf{BST Property} - While traversing through the \TM{} in an inorder fashion it adds the result to a \tt{List}. The list is then checked to be sorted by \key. 
+	\item \textbf{Max Heap Property}- While traversing  through the \TM{} in an in order fashion it ensures that the priority of the current \tn{} is larger than both of its children.
+	\item \textbf{Duplicates} - While traversing through the \TM{} in an in order fashion, keeping track of the visited \key s it ensures that all keys are distinct.
+	\item \textbf{Null keys and/or values} - While traversing through the \TM{} in an in order fashion, it ensures none of the keys or values of the nodes are \tt{null}.
+	\item \textbf{toString() Correctness} - Check that the string representation of the treap is correct by doing a separate pre-order traversal
+\end{itemize}
+Note that \tt{checkProperties()} abstracts and delgates some of these tasks to other helper functions to perform these checks. \\ \\
+\textbf{Tests} 
+\begin{itemize}
+	\item \tt{IRTest()} - This test first inserts everything from the randomized hashmap into a treap individually. Two new hashmaps are introduced to keep track of the contained and not-contained items. After each insertion, the properties of the treap are checked, and \lu{} is checked to ensure everything in \tt{contained} could be found correctly. The test then removes all elements incrementally and performs similar checks on properties and \lu. The purpose of this test was to ensure correctness of regular insertion and removal (and by extension tree rotations and lookup) on varying levels of input size. 
+	\item \tt{SplitJoinTest()} - Broadly, this test splits a given treap around an arbitrary key, and joins the two subtreaps back together. There are $4$ variations of this test that covers the $4$ cases of splitting.
+	\begin{itemize}
+		\item \tt{SplitJoinBelowRange()} - Here, the split key is smaller than smallest key of treap. In this case, we expect the entire treap to now become the right subtreap, and the left subtreap to be null. This is asserted in the test.
+		\item \tt{SplitJoinInRange()} -  Here, the split key is within the range of the treap keys, but is not equal to one of the treap keys. In this case, we expect there to be non-null subtreaps. Helper methods are used to assert that all keys in left subtreap are less than split key and all keys in right subtreap are greater than split key.
+		\item \tt{SplitJoinOnDot()} -  Here, the split key is equal to one of the treap keys. In this case, we expect there to be non-null subtreaps AND that the original entry with same key as split key ends up in the right subtreap. Helper methods are used to assert that all keys in left subtreap are less than split key and all keys in right subtreap are greater than or equal to split key.
+		\item \tt{SplitJoinAboveRange()} - Here, the split key is larger than the largest key of treap. In this case, we expect the entire treap to now become the left subtreap, and the right subtreap to be null. This is asserted in the test.
+	\end{itemize}
+	\item \tt{joinTest()} - Because the success of the \tt{SplitJoinTest()} is dependent on both \tt{split()} and \tt{join()} working correctly, it is hard to pinpoint the issue if that test fails. This test independently ensures that \join{} works by randomizing another set of unique key/value pairs that have keys that are all larger than the original set. Two separate treaps are made and are joined. The resulting treap is tested for correct properties.
+	\item \tt{EdgeCaseTest()} - This test checks all the edge cases listed below
+	\begin{itemize}
+		\item \rem and \lu on Empty Treap - Should return \tt{null} and avoid \NPE{}
+		\item Splits on Empty Treap - Should do nothing and avoid \NPE{}
+		\item Duplicate Insertion - No exceptions should be thrown, old entry should be replaced with new one, all properties should still hold.
+		\item \lu on \tt{null} and/or Keys not Present in Treap - Should return \tt{null} regardless
+		\item \ins and \rem \tt{null} - Should do nothing and return \tt{null} respectively
+		\item \join{} on \tt{BogusTreap} - \tt{BogusTreap} is a class that implements the \Treap interface, but has no legit implementations. An attempt to \join{} a \TM{} with a \tt{BogusTreap} should do nothing.
+	\end{itemize}
+	\item \tt{iteratorTest()} - This test asserts that the iterator iterates in sorted order, covers all the items in the treap,  \tt{NoSuchElementException} is thrown when one tries to call \tt{next()} too many times, and \CME is thrown when concurrent modification is attempted. I decided not to test the internal structure of the stack used in the iterator because this would end up being redundant with the source code, and I would not be able to truly test its correctness. In any case, the test for sorted order and coverage of all elements is sufficient to guarantee correctness.
+	\item \tt{meldTest()} - This test asserts that the meld function on any arbitray treaps works as intended by verifying the properties, and checking to ensure all elements fromt he original treaps are accounted for. 
+\end{itemize}
+\subsubsection{Issues Found During White Box Testing}
+White box testing proved to be very useful in pinpointing bugs and specific failures of logic. 
+\begin{itemize}
+\item One of the perfect examples of this has to do with the \lu{} functionality on my custom key \tt{ExtraKey}. In the \tt{EdgeCaseTest()} I assert that \tt{lookup(new ExtraKey(), value)}. That is, I assert that a newly formed instance of \tt{ExtraKey} with the same values as the one in the treap should be indentified as equal to the one in the treap. The expected behavior is for this to reutrn true since the two objects have the same contents. My implementation, however, failed on this case. Further inspection reveals that this occurred because I was using the \tt{.equals()} function in my source code. However, custom keys may not necessarily override the \tt{.equals()} function and may thus leave it compare memory addresses rather than contents. I then fixed this to \tt{compareTo() == 0} for a more universal check.
+\item In an initial version of my solution, \lu{} was throwing \NPE{} when tried on \tt{null} and keys not present in the treap. This allowed me to pinpoint the issue to a failure to check for the \tt{null} case. 
+\end{itemize}
+\end{document}

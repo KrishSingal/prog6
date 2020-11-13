@@ -153,15 +153,10 @@ public class TreapMapTest {
                 assertEquals(tmap.lookup(outside.getKey()), null);
         }
 
-        System.out.println(tmap);
-
         // Look-up
 
         for (Map.Entry<Integer, Integer> entry : ints.entrySet())
             assertEquals(tmap.lookup(entry.getKey()), entry.getValue());
-
-        System.out.println(ints);
-        System.out.println(intsJoin);
 
         // Removal
 
@@ -214,8 +209,6 @@ public class TreapMapTest {
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
 
-        System.out.println("Split amt: " + splitAmt);
-
         /*
         Joining them back together
          */
@@ -255,8 +248,6 @@ public class TreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt: " + splitAmt);
 
         /*
         Joining them back together
@@ -298,8 +289,6 @@ public class TreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt: " + splitAmt);
 
         /*
         Joining them back together
@@ -443,9 +432,7 @@ public class TreapMapTest {
 
         assertNull(tmap.remove(50)); // removing arbitrary value on empty treap should return null
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.remove(null);
-        }); // removing null should throw exception
+        assertNull(tmap.remove(null)); // removing null should throw exception
 
         tmap.split(50); // splitting should be allowed but should do nothing
 
@@ -473,15 +460,15 @@ public class TreapMapTest {
         Insertion of null
          */
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(null, 5);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(5, null);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(null, null);
-        });
+
+        tmap.insert(null, 5);
+        assertNull(tmap.lookup(null));
+
+        tmap.insert(7, null);
+        assertNull(tmap.lookup(null));
+
+        tmap.insert(null, null);
+        assertNull(tmap.lookup(null));
 
         /*
         Join with a treap that is not treapmap
@@ -489,9 +476,8 @@ public class TreapMapTest {
 
         Treap<Integer, Integer> bogus = new BogusTreap<>();
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.join(bogus);
-        });
+        tmap.join(bogus);
+
     }
 
     @Test
@@ -556,10 +542,6 @@ public class TreapMapTest {
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet())
             assertEquals(tmap.lookup(entry.getKey()), entry.getValue());
 
-        System.out.println("Extras in ExtraStringIRTest");
-        for (Map.Entry<ExtraKey, String> entry : extras.entrySet())
-            System.out.println(entry.getKey() + " " + entry.getValue());
-
         // Removal
 
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet()) {
@@ -591,16 +573,10 @@ public class TreapMapTest {
         // Split
         // Testing a negative split amount
 
-        System.out.println("Extras in ExtraStringSplitJoinTest");
-        for (Map.Entry<ExtraKey, String> entry : extras.entrySet())
-            System.out.println(entry.getKey() + " " + entry.getValue());
-
         Treap<ExtraKey, String> splitter = new TreapMap<>();
 
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet())
             splitter.insert(entry.getKey(), entry.getValue());
-
-        System.out.println("Splitter treap:" + splitter);
 
         double splitAmt = Math.random()*1000 - 1000;
         ExtraKey splitKey = new ExtraKey(splitAmt);
@@ -618,8 +594,6 @@ public class TreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt: " + splitAmt);
 
         /*
         Joining them back together
@@ -647,14 +621,11 @@ public class TreapMapTest {
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet())
             splitter.insert(entry.getKey(), entry.getValue());
 
-        System.out.println("Splitter treap:" + splitter);
         //List<ExtraKey> keys = (ArrayList<ExtraKey>) extras.keySet();
 
         ArrayList<ExtraKey> keys = new ArrayList<>();
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet())
             keys.add(entry.getKey());
-
-        System.out.println("ArrayList of all the keys:" + keys);
 
         ExtraKey splitKey = keys.get((int)(Math.random()*keys.size()));
         Treap<ExtraKey, String> subtreaps[] = splitter.split(splitKey);
@@ -671,8 +642,6 @@ public class TreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt for on the dot: " + splitKey.score);
 
         /*
         Joining them back together
@@ -730,8 +699,6 @@ public class TreapMapTest {
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
 
-        System.out.println("Split amt: " + splitKey.score);
-
         /*
         Joining them back together
          */
@@ -772,8 +739,6 @@ public class TreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt: " + splitAmt);
 
         /*
         Joining them back together
@@ -890,9 +855,7 @@ public class TreapMapTest {
 
         assertNull(tmap.remove(new ExtraKey(0.0))); // removing arbitrary value on empty treap should return null
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.remove(null);
-        }); // removing null should throw exception
+        assertNull(tmap.remove(null)); // removing null should throw exception
 
         tmap.split(new ExtraKey(0.0)); // splitting should be allowed but should do nothing
 
@@ -920,15 +883,15 @@ public class TreapMapTest {
         Insertion of null
          */
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(null, "Krish");
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(new ExtraKey(100000.0), null);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(null, null);
-        });
+
+        tmap.insert(null, "Krish");
+        assertNull(tmap.lookup(null));
+
+        tmap.insert(new ExtraKey(100000.0), null);
+        assertNull(tmap.lookup(new ExtraKey(100000.0)));
+
+        tmap.insert(null, null);
+        assertNull(tmap.lookup(null));
 
         /*
         Join with a treap that is not treapmap
@@ -936,9 +899,8 @@ public class TreapMapTest {
 
         Treap<ExtraKey, String> bogus = new BogusTreap<>();
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.join(bogus);
-        });
+        tmap.join(bogus);
+
     }
 
 

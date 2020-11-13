@@ -98,8 +98,9 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
             root = insertRec(new TreapNode(key, value), root);
         }
 
-        else
+        /*else
             throw new IllegalArgumentException("Please insert a non-null entry!");
+        */
     }
 
     /**
@@ -173,7 +174,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
 
         // invalid input handling
         if(key == null){
-            throw new IllegalArgumentException("Please remove for a non-null key!");
+            return null;
         }
 
         // Check to ensure user is entering proper types
@@ -321,7 +322,7 @@ public class TreapMap<K extends Comparable<K>, V> implements Treap<K, V> {
 
         // check that provided treap is of correct implementing class
         if(! (t instanceof TreapMap)){
-            throw new IllegalArgumentException("Please join a treap of the same implementing class!");
+            return;
         }
 
         TreapNode t_root = ((TreapMap<K, V>) t).root;

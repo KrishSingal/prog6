@@ -140,10 +140,6 @@ public class AdditionalTreapMapTest {
         for (Map.Entry<String, Character> entry : strings.entrySet())
             assertEquals(tmap.lookup(entry.getKey()), entry.getValue());
 
-        System.out.println("strings in stringstringIRTest");
-        for (Map.Entry<String, Character> entry : strings.entrySet())
-            System.out.println(entry.getKey() + " " + entry.getValue());
-
         // Removal
 
         for (Map.Entry<String, Character> entry : strings.entrySet()) {
@@ -175,16 +171,10 @@ public class AdditionalTreapMapTest {
         // Split
         // Testing a negative split amount
 
-        System.out.println("strings in stringstringSplitJoinTest");
-        for (Map.Entry<String, Character> entry : strings.entrySet())
-            System.out.println(entry.getKey() + " " + entry.getValue());
-
         Treap<String, Character> splitter = new TreapMap<>();
 
         for (Map.Entry<String, Character> entry : strings.entrySet())
             splitter.insert(entry.getKey(), entry.getValue());
-
-        System.out.println("Splitter treap:" + splitter);
 
         String splitKey = new String("@$%#");
         Treap<String, Character> [] subtreaps = splitter.split(splitKey);
@@ -201,8 +191,6 @@ public class AdditionalTreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt: " + splitKey);
 
         /*
         Joining them back together
@@ -230,14 +218,11 @@ public class AdditionalTreapMapTest {
         for (Map.Entry<String, Character> entry : strings.entrySet())
             splitter.insert(entry.getKey(), entry.getValue());
 
-        System.out.println("Splitter treap:" + splitter);
         //List<String> keys = (ArrayList<String>) strings.keySet();
 
         ArrayList<String> keys = new ArrayList<>();
         for (Map.Entry<String, Character> entry : strings.entrySet())
             keys.add(entry.getKey());
-
-        System.out.println("ArrayList of all the keys:" + keys);
 
         String splitKey = keys.get((int)(Math.random()*keys.size()));
         Treap<String, Character> subtreaps[] = splitter.split(splitKey);
@@ -254,8 +239,6 @@ public class AdditionalTreapMapTest {
             else
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
-
-        System.out.println("Split amt for on the dot: " + splitKey);
 
         /*
         Joining them back together
@@ -316,8 +299,6 @@ public class AdditionalTreapMapTest {
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
 
-        System.out.println("Split amt: " + splitKey);
-
         /*
         Joining them back together
          */
@@ -358,8 +339,6 @@ public class AdditionalTreapMapTest {
                 assertEquals(subtreaps[1].lookup(entry.getKey()), entry.getValue());
         }
 
-        System.out.println("Split amt: " + splitKey);
-
         /*
         Joining them back together
          */
@@ -390,7 +369,6 @@ public class AdditionalTreapMapTest {
 
         tmap.join(tmapJoin);
         assertTrue(checkProperties(((TreapMap<String, Character>) tmap).root));
-        System.out.println(tmap);
 
         // Check that everything from strings and stringsJoin is in the joined treap
         for (Map.Entry<String, Character> entry : strings.entrySet()) {
@@ -401,25 +379,6 @@ public class AdditionalTreapMapTest {
             assertEquals(tmap.lookup(entry.getKey()), entry.getValue());
         }
     }
-
-    /*public boolean checkBSTstrings(TreapNode root){
-        inorder.clear();
-        inOrder(root, inorder);
-        String last = "";
-        boolean ret = true;
-
-        System.out.println(inorder);
-
-        for(int i=0; i< inorder.size(); i++){
-            String now = (String) inorder.get(i).key;
-            if(i !=0 && now.compareTo(last) <0){
-                ret = false;
-
-            }
-            last = now;
-        }
-        return ret;
-    }*/
 
     public boolean checkProperties(TreapNode root){
         inorder.clear();
@@ -485,56 +444,4 @@ public class AdditionalTreapMapTest {
         return true;
     }
 
-    /*
-    @Test
-    public void EdgeCasestringsTest(){
-        Treap<String, Character> tmap = new TreapMap<>();
-        Iterator ti = tmap.iterator();
-
-        // Tests on empty treap
-
-        assertNull(tmap.remove(new String(0.0))); // removing arbitrary value on empty treap should return null
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.remove(null);
-        }); // removing null should throw exception
-
-        tmap.split(new String(0.0)); // splitting should be allowed but should do nothing
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.split(null);
-        }); // splitting across null should throw an exception
-
-        // Duplicate insertion
-
-        tmap.insert(new String(5.0), "krish");
-        tmap.insert(new String(5.0), "singal");
-
-        assertEquals(tmap.lookup(new String(5.0)), "singal");
-
-        assertNull(tmap.lookup(null));
-
-        assertNull(tmap.lookup(new String(100000.0)));
-        assertNull(tmap.remove(new String(100000.0)));
-
-
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(null, "Krish");
-        });
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(new String(100000.0), null);
-        });
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.insert(null, null);
-        });
-
-        Treap<String, Character> bogus = new BogusTreap<>();
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            tmap.join(bogus);
-        });
-
-    }*/
 }
