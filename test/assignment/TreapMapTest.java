@@ -27,6 +27,13 @@ public class TreapMapTest {
     Map<Integer, Integer> intsJoin;
     Map<ExtraKey, String> extrasJoin;
 
+    ArrayList<TreapNode> inorder = new ArrayList<>();
+
+    boolean heap = true;
+    boolean dupl= true;
+    boolean nu = true;
+    boolean tos= true;
+
     @Before
     public void setUp(){
         int amt = (int) (Math.random()*50);
@@ -136,7 +143,7 @@ public class TreapMapTest {
 
             // Check that BST property satisfied after each insertion
             ti = tmap.iterator();
-            assertTrue(checkBSTints(ti));
+            assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) tmap).root));
 
             // Check after each insertion that lookup works on everything in there
             for (Map.Entry<Integer, Integer> inside : contained.entrySet())
@@ -166,7 +173,7 @@ public class TreapMapTest {
 
             // Check that BST property satisfied after each insertion
             ti = tmap.iterator();
-            assertTrue(checkBSTints(ti));
+            assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) tmap).root));
 
             // Check after each insertion that lookup works on everything in there
             for (Map.Entry<Integer, Integer> inside : contained.entrySet())
@@ -193,8 +200,8 @@ public class TreapMapTest {
 
         int splitAmt = (int)(Math.random()*10000) - 10000;
         Treap<Integer, Integer> [] subtreaps = splitter.split(splitAmt);
-        assertTrue(checkBSTints(subtreaps[0].iterator()));
-        assertTrue(checkBSTints(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) subtreaps[0]).root));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) subtreaps[1]).root));
         assertTrue(checkLessints(subtreaps[0].iterator(), splitAmt));
         assertTrue(checkGreaterints(subtreaps[1].iterator(), splitAmt));
 
@@ -217,7 +224,7 @@ public class TreapMapTest {
         Treap<Integer, Integer> secondLow = subtreaps[1];
 
         firstLow.join(secondLow);
-        assertTrue(checkBSTints(firstLow.iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) firstLow).root));
 
         for (Map.Entry<Integer, Integer> entry : ints.entrySet()) {
             assertEquals(firstLow.lookup(entry.getKey()), entry.getValue());
@@ -235,8 +242,8 @@ public class TreapMapTest {
 
         int splitAmt = (int)(Math.random()*10000);
         Treap<Integer, Integer> subtreaps [] = splitter.split(splitAmt);
-        assertTrue(checkBSTints(subtreaps[0].iterator()));
-        assertTrue(checkBSTints(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) subtreaps[0]).root));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) subtreaps[1]).root));
         assertTrue(checkLessints(subtreaps[0].iterator(), splitAmt));
         assertTrue(checkGreaterints(subtreaps[1].iterator(), splitAmt));
 
@@ -259,7 +266,7 @@ public class TreapMapTest {
         Treap<Integer, Integer> secondMid = subtreaps[1];
 
         firstMid.join(secondMid);
-        assertTrue(checkBSTints(firstMid.iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) firstMid).root));
 
         for (Map.Entry<Integer, Integer> entry : ints.entrySet()) {
             assertEquals(firstMid.lookup(entry.getKey()), entry.getValue());
@@ -278,8 +285,8 @@ public class TreapMapTest {
 
         int splitAmt = (int)(Math.random()*10000) + 10000;
         Treap<Integer, Integer> subtreaps [] = splitter.split(splitAmt);
-        assertTrue(checkBSTints(subtreaps[0].iterator()));
-        assertTrue(checkBSTints(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) subtreaps[0]).root));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) subtreaps[1]).root));
         assertTrue(checkLessints(subtreaps[0].iterator(), splitAmt));
         assertTrue(checkGreaterints(subtreaps[1].iterator(), splitAmt));
 
@@ -302,7 +309,7 @@ public class TreapMapTest {
         Treap<Integer, Integer> secondHigh = subtreaps[1];
 
         firstHigh.join(secondHigh);
-        assertTrue(checkBSTints(firstHigh.iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) firstHigh).root));
 
         for (Map.Entry<Integer, Integer> entry : ints.entrySet()) {
             assertEquals(firstHigh.lookup(entry.getKey()), entry.getValue());
@@ -323,7 +330,7 @@ public class TreapMapTest {
         }
 
         tmap.join(tmapJoin);
-        assertTrue(checkBSTints(tmap.iterator()));
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) tmap).root));
 
         // Check that everything from ints and intJoin is in the joined treap
         for (Map.Entry<Integer, Integer> entry : ints.entrySet()) {
@@ -335,20 +342,69 @@ public class TreapMapTest {
         }
     }
 
-    public boolean checkBSTints(Iterator<Integer> ti){
-        int index =0;
-        boolean ret = true;
-        Integer last = null;
-        while(ti.hasNext()){
-            Integer now = ti.next();
-            if(index !=0 && now.compareTo(last) <0){
-                ret = false;
+    public boolean checkPropertiesints(TreapNode root){
+        inorder.clear();
+
+        heap = true;
+        nu = true;
+        dupl = true;
+        tos = true;
+
+        inOrderints(root, inorder, new HashSet<Integer>());
+        Integer last= null;
+
+
+        for(int i=0; i< inorder.size(); i++){
+            Integer now = (Integer) inorder.get(i).key;
+            if(i !=0 && now.compareTo(last) <0){
+                return false;
 
             }
             last = now;
         }
+        Treap<Integer, Integer> stringTester = new TreapMap<>(root);
+        tos = stringTester.toString() .equals(buildString(root,0));
+        return (heap && dupl && nu && tos);
+    }
+
+    public String buildString (TreapNode root, int tab_amt){
+        String ret = "";
+
+        if(root != null) {
+
+            for (int i = 0; i < tab_amt; i++) {
+                ret += "\t";
+            }
+            ret += root;
+
+            ret += buildString(root.left, tab_amt +1);
+            ret += buildString(root.right, tab_amt +1);
+
+        }
+
         return ret;
     }
+
+    public void inOrderints(TreapNode root, ArrayList<TreapNode> inorder, HashSet<Integer> seen){
+        if(root!= null){
+            inOrderints(root.left, inorder, seen);
+
+            inorder.add(root);
+            if(root.key == null || root.value == null){
+                nu = false;
+            }
+            if((root.left!= null && root.left.priority> root.priority) || (root.right!= null && root.right.priority> root.priority)){
+                heap = false;
+            }
+            if(seen.contains(root.key)){
+                dupl = false;
+            }
+            seen.add((Integer)root.key);
+
+            inOrderints(root.right, inorder, seen);
+        }
+    }
+    
 
     public boolean checkLessints(Iterator<Integer> ti, Integer splitKey){
         while(ti.hasNext()){
@@ -485,7 +541,7 @@ public class TreapMapTest {
 
             // Check that BST property satisfied after each insertion
             ti = tmap.iterator();
-            assertTrue(checkBSTextras(ti));
+            assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) tmap).root));
 
             // Check after each insertion that lookup works on everything in there
             for (Map.Entry<ExtraKey, String> inside : contained.entrySet())
@@ -514,7 +570,7 @@ public class TreapMapTest {
 
             // Check that BST property satisfied after each insertion
             ti = tmap.iterator();
-            assertTrue(checkBSTextras(ti));
+            assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) tmap).root));
 
             // Check after each insertion that lookup works on everything in there
             for (Map.Entry<ExtraKey, String> inside : contained.entrySet())
@@ -549,8 +605,8 @@ public class TreapMapTest {
         double splitAmt = Math.random()*1000 - 1000;
         ExtraKey splitKey = new ExtraKey(splitAmt);
         Treap<ExtraKey, String> [] subtreaps = splitter.split(splitKey);
-        assertTrue(checkBSTextras(subtreaps[0].iterator()));
-        assertTrue(checkBSTextras(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[0]).root));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[1]).root));
         assertTrue(checkLessExtras(subtreaps[0].iterator(), splitKey));
         assertTrue(checkGreaterExtras(subtreaps[1].iterator(), splitKey));
 
@@ -573,7 +629,7 @@ public class TreapMapTest {
         Treap<ExtraKey, String> secondLow = subtreaps[1];
 
         firstLow.join(secondLow);
-        assertTrue(checkBSTextras(firstLow.iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) firstLow).root));
 
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet()){
             assertEquals(firstLow.lookup(entry.getKey()), entry.getValue());
@@ -602,8 +658,8 @@ public class TreapMapTest {
 
         ExtraKey splitKey = keys.get((int)(Math.random()*keys.size()));
         Treap<ExtraKey, String> subtreaps[] = splitter.split(splitKey);
-        assertTrue(checkBSTextras(subtreaps[0].iterator()));
-        assertTrue(checkBSTextras(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[0]).root));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[1]).root));
         assertTrue(checkLessExtras(subtreaps[0].iterator(), splitKey));
         assertTrue(checkGreaterExtras(subtreaps[1].iterator(), splitKey));
 
@@ -626,7 +682,7 @@ public class TreapMapTest {
         Treap<ExtraKey, String> secondDot = subtreaps[1];
 
         firstDot.join(secondDot);
-        assertTrue(checkBSTextras(firstDot.iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) firstDot).root));
 
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet()){
             assertEquals(firstDot.lookup(entry.getKey()), entry.getValue());
@@ -660,8 +716,8 @@ public class TreapMapTest {
 
         ExtraKey splitKey = new ExtraKey(randKey);
         Treap<ExtraKey, String> subtreaps [] = splitter.split(splitKey);
-        assertTrue(checkBSTextras(subtreaps[0].iterator()));
-        assertTrue(checkBSTextras(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[0]).root));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[1]).root));
         assertTrue(checkLessExtras(subtreaps[0].iterator(), splitKey));
         assertTrue(checkGreaterExtras(subtreaps[1].iterator(), splitKey));
 
@@ -684,7 +740,7 @@ public class TreapMapTest {
         Treap<ExtraKey, String> secondMid = subtreaps[1];
 
         firstMid.join(secondMid);
-        assertTrue(checkBSTextras(firstMid.iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) firstMid).root));
 
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet()){
             assertEquals(firstMid.lookup(entry.getKey()), entry.getValue());
@@ -703,8 +759,8 @@ public class TreapMapTest {
         double splitAmt = Math.random()*1000 + 1000;
         ExtraKey splitKey = new ExtraKey(splitAmt);
         Treap<ExtraKey, String> subtreaps []= splitter.split(splitKey);
-        assertTrue(checkBSTextras(subtreaps[0].iterator()));
-        assertTrue(checkBSTextras(subtreaps[1].iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[0]).root));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) subtreaps[1]).root));
         assertTrue(checkLessExtras(subtreaps[0].iterator(), splitKey));
         assertTrue(checkGreaterExtras(subtreaps[1].iterator(), splitKey));
 
@@ -727,7 +783,7 @@ public class TreapMapTest {
         Treap<ExtraKey, String> secondHigh = subtreaps[1];
 
         firstHigh.join(secondHigh);
-        assertTrue(checkBSTextras(firstHigh.iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) firstHigh).root));
 
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet()){
             assertEquals(firstHigh.lookup(entry.getKey()), entry.getValue());
@@ -748,7 +804,7 @@ public class TreapMapTest {
         }
 
         tmap.join(tmapJoin);
-        assertTrue(checkBSTextras(tmap.iterator()));
+        assertTrue(checkPropertiesextras(((TreapMap<ExtraKey, String>) tmap).root));
 
         // Check that everything from extras and extrasJoin is in the joined treap
         for (Map.Entry<ExtraKey, String> entry : extras.entrySet()) {
@@ -760,18 +816,49 @@ public class TreapMapTest {
         }
     }
 
-    public boolean checkBSTextras(Iterator<ExtraKey> ti){
-        int index =0;
-        boolean ret = true;
-        ExtraKey last = null;
-        while(ti.hasNext()){
-            ExtraKey now = ti.next();
-            if(index !=0 && now.compareTo(last) <0){
-                ret = false;
+    public boolean checkPropertiesextras(TreapNode root){
+        inorder.clear();
+
+        heap = true;
+        nu = true;
+        dupl = true;
+        tos =true;
+
+        inOrderextras(root, inorder, new HashSet<ExtraKey>());
+        ExtraKey last= null;
+
+
+        for(int i=0; i< inorder.size(); i++){
+            ExtraKey now = (ExtraKey) inorder.get(i).key;
+            if(i !=0 && now.compareTo(last) <0){
+                return false;
+
             }
             last = now;
         }
-        return ret;
+        Treap<ExtraKey, String> stringTester = new TreapMap<>(root);
+        tos = stringTester.toString() .equals(buildString(root,0));
+        return (heap && dupl && nu && tos);
+    }
+
+    public void inOrderextras(TreapNode root, ArrayList<TreapNode> inorder, HashSet<ExtraKey> seen){
+        if(root!= null){
+            inOrderextras(root.left, inorder, seen);
+
+            inorder.add(root);
+            if(root.key == null || root.value == null){
+                nu = false;
+            }
+            if((root.left!= null && root.left.priority> root.priority) || (root.right!= null && root.right.priority> root.priority)){
+                heap = false;
+            }
+            if(seen.contains(root.key)){
+                dupl = false;
+            }
+            seen.add((ExtraKey)root.key);
+
+            inOrderextras(root.right, inorder, seen);
+        }
     }
 
     public boolean checkLessExtras(Iterator<ExtraKey> ti, ExtraKey splitKey){
@@ -853,4 +940,50 @@ public class TreapMapTest {
             tmap.join(bogus);
         });
     }
+
+
+    @Test
+    public void meldTest(){
+        Map<Integer, Integer> intsMeld = new HashMap<Integer, Integer> ();
+
+        boolean done = false;
+        int amt = (int)(Math.random()*50);
+
+        for(int i =0; i< amt; i++){
+            do {
+                int rik = (int) (Math.random() * 10000);
+                int riv = (int) (Math.random() * 10000);
+
+                if(intsMeld.get(rik) == null ){
+                    intsMeld.put(rik, riv);
+                    done =true;
+                }
+            } while(!done);
+            done = false;
+        }
+
+        Treap<Integer, Integer> tmap = new TreapMap<>();
+        Treap<Integer, Integer> tmapMeld = new TreapMap<>();
+
+        for (Map.Entry<Integer, Integer> entry : ints.entrySet()) {
+            tmap.insert(entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<Integer, Integer> entry : intsMeld.entrySet()) {
+            tmapMeld.insert(entry.getKey(), entry.getValue());
+        }
+
+        tmap.meld(tmapMeld);
+        assertTrue(checkPropertiesints(((TreapMap<Integer, Integer>) tmap).root));
+
+        for (Map.Entry<Integer, Integer> entry : ints.entrySet()) {
+            assertEquals(tmap.lookup(entry.getKey()), entry.getValue());
+        }
+
+        for (Map.Entry<Integer, Integer> entry : intsMeld.entrySet()) {
+            assertEquals(tmap.lookup(entry.getKey()), entry.getValue());
+        }
+
+    }
+
 }

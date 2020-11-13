@@ -7,6 +7,9 @@ public class TestingTreap {
         tmap.insert(10,6);
         tmap.insert(5,9);
         tmap.insert(-2, 14);
+        System.out.println(tmap);
+        tmap.insert(-2, -5);
+        System.out.println(tmap);
         System.out.println(tmap.lookup(-2));
         System.out.println(tmap.remove(10));
         tmap.split(5);
